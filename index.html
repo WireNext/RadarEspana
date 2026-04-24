@@ -1,64 +1,160 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Radar Meteorológico Pro - RainViewer</title>
+    <title>Radar Pro - Legend Refined</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; }
-        #map { 
-            height: 100vh; /* Ocupa toda la pantalla */
-            width: 100%; 
-            background-color: #1a1a1a;
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        #map { width: 100%; height: 100vh; z-index: 1; }
+
+        /* Estilo Liquid Glass Base */
+        .glass-panel {
+            position: absolute; z-index: 1000;
+            background: rgba(25, 25, 25, 0.6); 
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        .info-panel {
-            position: absolute;
-            top: 10px;
-            left: 50px;
-            z-index: 1000;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            pointer-events: none;
+
+        /* LEYENDA MEJORADA */
+        .legend-panel {
+            top: 25px; left: 20px; 
+            padding: 15px; border-radius: 22px;
+            width: 130px;
+        }
+        
+        .legend-title {
+            font-size: 11px; font-weight: 800; opacity: 0.6;
+            margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .legend-item { 
+            display: flex; align-items: center; 
+            margin-bottom: 8px; font-size: 13px; font-weight: 500;
+        }
+        
+        .color-box { 
+            width: 14px; height: 14px; border-radius: 4px; 
+            margin-right: 10px; border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Botón Ubicación */
+        .locate-btn {
+            position: absolute; top: 25px; right: 20px;
+            width: 50px; height: 50px; z-index: 1000;
+            background: rgba(25, 25, 25, 0.6); backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Control Inferior */
+        .timeline-container {
+            bottom: 40px; left: 50%; transform: translateX(-50%);
+            width: 85%; max-width: 480px; padding: 20px; border-radius: 28px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        #time-label { font-weight: 700; font-size: 14px; margin-bottom: 15px; letter-spacing: 0.5px; }
+        .slider-container { width: 100%; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; }
+        input[type=range]::-webkit-slider-thumb { 
+            -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; 
+            background: #fff; margin-top: -10px; box-shadow: 0 4px 12px #000; 
+        }
+
+        /* AJUSTES MÓVIL */
+        @media (max-width: 600px) {
+            .legend-panel {
+                width: auto; top: auto; bottom: 130px; left: 50%; 
+                transform: translateX(-50%); display: flex; flex-wrap: wrap;
+                justify-content: center; gap: 10px; padding: 10px 20px;
+                max-width: 90%;
+            }
+            .legend-title { display: none; }
+            .legend-item { margin-bottom: 0; font-size: 11px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="info-panel">Radar en tiempo real (RainViewer)</div>
     <div id="map"></div>
 
+    <div class="glass-panel legend-panel">
+        <div class="legend-title">Intensidad</div>
+        <div class="legend-item"><div class="color-box" style="background:#00e5ff"></div> Ligera</div>
+        <div class="legend-item"><div class="color-box" style="background:#00ff00"></div> Mod.</div>
+        <div class="legend-item"><div class="color-box" style="background:#ffff00"></div> Fuerte</div>
+        <div class="legend-item"><div class="color-box" style="background:#ff9100"></div> Muy F.</div>
+        <div class="legend-item"><div class="color-box" style="background:#ff0000"></div> Tormenta</div>
+    </div>
+
+    <div class="locate-btn" onclick="locateUser()">
+        <svg viewBox="0 0 24 24" style="fill:white; width:24px;"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+    </div>
+
+    <div class="glass-panel timeline-container">
+        <div id="time-label">CONECTANDO...</div>
+        <div class="slider-container">
+            <input type="range" id="radar-slider" min="0" max="12" step="1" value="12">
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
-        // 1. Inicializar el mapa centrado en España
-        const map = L.map('map').setView([40.4167, -3.7033], 6);
+        const map = L.map('map', { zoomControl: false, minZoom: 3, maxZoom: 12 }).setView([40, -3.7], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-        // 2. Capa de mapa base (Estilo oscuro para que resalte la lluvia)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO'
+        let timestamps = [];
+        let host = "";
+        let userMarker = null;
+        let radarLayer = L.tileLayer('', { 
+            opacity: 0.85, zIndex: 1000, maxNativeZoom: 8, maxZoom: 12, tileSize: 512, zoomOffset: -1 
         }).addTo(map);
 
-        // 3. Capa de Radar de RainViewer
-        // Explicación de la URL:
-        // /nowcast_10/ -> Predicción inmediata basada en radares oficiales (AEMET incluído)
-        // /256/{z}/{x}/{y}/ -> Tamaño de tesela y coordenadas del mapa
-        // /2/1_1.png -> Estilo de color (el '2' es el esquema universal de radar)
-        const radarLayer = L.tileLayer('https://tilecache.rainviewer.com/v2/radar/nowcast_10/256/{z}/{x}/{y}/2/1_1.png', {
-            attribution: 'Radar data by RainViewer',
-            opacity: 0.8,
-            transparent: true,
-            zIndex: 1000
-        }).addTo(map);
+        async function initRadar() {
+            try {
+                const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+                const data = await response.json();
+                host = data.host;
+                timestamps = data.radar.past.slice(-13); 
+                const slider = document.getElementById('radar-slider');
+                slider.max = timestamps.length - 1;
+                slider.value = timestamps.length - 1;
+                updateRadar(timestamps.length - 1);
+                slider.addEventListener('input', (e) => updateRadar(parseInt(e.target.value)));
+            } catch (e) { console.error(e); }
+        }
 
-        // 4. Función opcional para refrescar el radar cada 5 minutos
-        setInterval(function() {
-            radarLayer.redraw();
-        }, 300000);
+        function updateRadar(index) {
+            const frame = timestamps[index];
+            if (!frame) return;
+            radarLayer.setUrl(`${host}${frame.path}/512/{z}/{x}/{y}/4/1_0.png`);
+            const date = new Date(frame.time * 1000);
+            document.getElementById('time-label').innerText = 
+                (index === timestamps.length - 1 ? "● EN VIVO " : "HISTORIAL ") + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function locateUser() { map.locate({setView: true, maxZoom: 10}); }
+        map.on('locationfound', function(e) {
+            if (userMarker) userMarker.setLatLng(e.latlng);
+            else {
+                const icon = L.divIcon({ 
+                    className: 'user-location-dot', 
+                    html: '<div style="width:12px; height:12px; background:#007AFF; border:3px solid white; border-radius:50%; box-shadow:0 0 10px #007AFF;"></div>',
+                    iconSize: [18, 18], iconAnchor: [9, 9] 
+                });
+                userMarker = L.marker(e.latlng, {icon: icon}).addTo(map);
+            }
+        });
+
+        initRadar();
     </script>
 </body>
 </html>
