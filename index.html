@@ -89,11 +89,11 @@
 
     <div class="glass-panel legend-panel">
         <div class="legend-title">Radar</div>
-        <div class="legend-item"><div class="color-box" style="background:#00e5ff"></div> Ligera</div>
-        <div class="legend-item"><div class="color-box" style="background:#00ff00"></div> Mod.</div>
-        <div class="legend-item"><div class="color-box" style="background:#ffff00"></div> Fuerte</div>
-        <div class="legend-item"><div class="color-box" style="background:#ff9100"></div> Muy F.</div>
-        <div class="legend-item"><div class="color-box" style="background:#ff0000"></div> Tormenta</div>
+        <div class="legend-item"><div class="color-box" style="background:#00e5ff"></div> Lleugera</div>
+        <div class="legend-item"><div class="color-box" style="background:#00ff00"></div> Moderada</div>
+        <div class="legend-item"><div class="color-box" style="background:#ffff00"></div> Forta</div>
+        <div class="legend-item"><div class="color-box" style="background:#ff9100"></div> Molt Forta</div>
+        <div class="legend-item"><div class="color-box" style="background:#ff0000"></div> Tempesta</div>
     </div>
 
     <div class="locate-btn" onclick="locateUser()">
@@ -101,7 +101,7 @@
     </div>
 
     <div class="glass-panel timeline-container">
-        <div id="time-label">CONECTANDO...</div>
+        <div id="time-label">CONNECTANT...</div>
         <div class="slider-container">
             <input type="range" id="radar-slider" min="0" max="12" step="1" value="12">
         </div>
@@ -139,7 +139,7 @@
             radarLayer.setUrl(`${host}${frame.path}/512/{z}/{x}/{y}/4/1_0.png`);
             const date = new Date(frame.time * 1000);
             document.getElementById('time-label').innerText = 
-                (index === timestamps.length - 1 ? "● VIVO " : "PASADO ") + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                (index === timestamps.length - 1 ? "● ARA " : "PASSAT ") + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
         function locateUser() { map.locate({setView: true, maxZoom: 10}); }
